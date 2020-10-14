@@ -11,6 +11,13 @@ class ModelName(str, Enum):
     lenet = "lenet"
 
 
+class Item2(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    tax: Optional[float] = None
+
+
 app = FastAPI()
 
 fake_items_db = [
@@ -64,4 +71,13 @@ async def get_model(model_name: ModelName):
 
 @app.get("/items/")
 async def read_item(skip: int = 0, limit: int = 10):
-    return fake_items_db[skip : skip + limit]
+    return fake_items_db[skip: skip + limit]
+
+
+@app.post("/items/")
+async def create_item(item: Item2):
+    item_dict = item.dict()
+    if item.tax:
+        price_with_tax = item.price + item.tax
+        item_dict.update({"price_with_tax": price_with_tax})
+    return item_dict
